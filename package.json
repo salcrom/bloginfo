@@ -2,6 +2,7 @@
   "name": "bloglist",
   "version": "1.0.0",
   "description": "permitir a los usuarios guardar informacion sobre blogs",
+  "type": "commonjs",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
