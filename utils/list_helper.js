@@ -50,9 +50,29 @@ const mostBlogs = (blogs) => {
     return authorCounts;
 };
 
+const mostLikes = (blogs) => {
+    if (!Array.isArray(blogs) || blogs.length === 0) {
+        return "No hay blogs";
+    }
+
+    // Agrupar por autor y contar likes
+    const authorCounts = fp.flow([
+        fp.groupBy("author"),
+        fp.map((group) => ({
+            author: group[0].author,
+            likes: fp.sumBy("likes")(group),
+        })),
+        fp.maxBy("likes"),
+    ])(blogs);
+
+    console.log("authorCounts:", authorCounts);
+    return authorCounts;
+};
+
 module.exports = {
     dummy,
     totalLikes,
     favoriteBlog,
     mostBlogs,
+    mostLikes,
 };
