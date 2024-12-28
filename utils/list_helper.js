@@ -1,3 +1,5 @@
+let fp = require("lodash/fp");
+
 const dummy = (blogs) => {
     return Array.isArray(blogs) ? 1 : "";
 };
@@ -30,8 +32,27 @@ const favoriteBlog = (blogs) => {
     return result.find((blog) => blog.likes === maxLikes);
 };
 
+const mostBlogs = (blogs) => {
+    if (!Array.isArray(blogs) || blogs.length === 0) {
+        return "No hay blogs";
+    }
+
+    // Agrupar por autor y contar blogs
+    const authorCounts = fp.flow([
+        fp.groupBy("author"),
+        fp.map((group) => ({
+            author: group[0].author,
+            blogs: group.length,
+        })),
+        fp.maxBy("blogs"),
+    ])(blogs);
+
+    return authorCounts;
+};
+
 module.exports = {
     dummy,
     totalLikes,
     favoriteBlog,
+    mostBlogs,
 };
