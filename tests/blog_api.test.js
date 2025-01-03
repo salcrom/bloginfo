@@ -44,6 +44,18 @@ describe("blog_api", () => {
             .expect("Content-Type", /application\/json/);
     });
 
+    test("verificar que la propiedad de identificador único se llama id", async () => {
+        const response = await api.get("/api/blogs");
+        const blog = response.body[0];
+
+        // Verifica que exista la propiedad 'id'
+        assert(blog.id);
+        // Verifia que NO exista la propiedad '_id'
+        assert(!blog._id);
+    });
+
+    //--------//
+
     test("there are two blogs", async () => {
         const response = await api.get("/api/blogs");
 
