@@ -17,8 +17,7 @@ beforeEach(async () => {
 });
 
 describe("blog_api", () => {
-    console.log("entered test");
-    test("blogs are returned as json", async () => {
+    test("los blogs son retornados como JSON", async () => {
         await api
             .get("/api/blogs")
             .expect(200)
@@ -35,7 +34,7 @@ describe("blog_api", () => {
         assert(!blog._id);
     });
 
-    test("a valid blog can be added", async () => {
+    test("Un blog válido puede ser añadido", async () => {
         const newBlog = {
             title: "async/await simplifies making async calls",
             author: "Helsinki University",
@@ -65,6 +64,20 @@ describe("blog_api", () => {
         assert.strictEqual(addedBlog.author, newBlog.author);
         assert.strictEqual(addedBlog.url, newBlog.url);
         assert.strictEqual(addedBlog.likes, newBlog.likes);
+    });
+
+    test("verficar que si la propiedad likes falta en la solicitud, tendrá valor 0", async () => {
+        const newBlog = {
+            title: "likes = 0",
+            author: "Helsinki University",
+            url: "https://helsinkiuniversity.com/",
+        };
+
+        await api.post("/api/blogs").send(newBlog).expect(201);
+
+        const blogsAtEnd = await helper.blogsInDb();
+
+        assert.strictEqual(blogsAtEnd[blogsAtEnd.length - 1].likes, 0);
     });
 
     //--------//
