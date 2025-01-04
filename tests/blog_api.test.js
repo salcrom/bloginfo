@@ -80,6 +80,28 @@ describe("blog_api", () => {
         assert.strictEqual(blogsAtEnd[blogsAtEnd.length - 1].likes, 0);
     });
 
+    test("blog sin propiedad title o url, obtiene respuesta del backend, estado 400 Bad Request", async () => {
+        const newBlog = {
+            author: "Helsinki University",
+            url: "https://helsinkiuniversity.com/",
+            likes: 7,
+        };
+
+        const newBlog2 = {
+            title: "Property without title or url",
+            author: "Helsinki University",
+            likes: 7,
+        };
+
+        await api.post("/api/blogs").send(newBlog).expect(400);
+        await api.post("/api/blogs").send(newBlog2).expect(400);
+
+        const blogsAtEnd = await helper.blogsInDb();
+        console.log("blogsAtEnd", blogsAtEnd);
+
+        assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length);
+    });
+
     //--------//
 
     test("there are two blogs", async () => {
@@ -93,20 +115,6 @@ describe("blog_api", () => {
 
         const titles = response.body.map((e) => e.title);
         assert(titles.includes("React patterns"));
-    });
-
-    test("blog without title is not added", async () => {
-        const newBlog = {
-            author: "Helsinki University",
-            url: "https://helsinkiuniversity.com/",
-            likes: 7,
-        };
-
-        await api.post("/api/blogs").send(newBlog).expect(400);
-
-        const blogsAtEnd = await helper.blogsInDb();
-
-        assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length);
     });
 
     test("a specific blog can be viewed", async () => {
