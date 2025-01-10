@@ -24,14 +24,7 @@ blogsRouter.get("/:id", async (request, response, next) => {
 blogsRouter.post("/", async (request, response) => {
     const body = request.body;
 
-    const decodedToken = jwt.verify(request.token, process.env.SECRET);
-    if (!decodedToken.id) {
-        return response.status(401).json({ error: "token invalid" });
-    }
-    const user = await User.findById(decodedToken.id);
-    if (!user) {
-        return response.status(404).json({ error: "user not found" });
-    }
+    const user = request.user;
 
     const blog = new Blog({
         title: body.title,
@@ -51,17 +44,7 @@ blogsRouter.post("/", async (request, response) => {
 
 blogsRouter.delete("/:id", async (request, response) => {
     try {
-        // verificar token
-        const decodedToken = jwt.verify(request.token, process.env.SECRET);
-        if (!decodedToken.id) {
-            return response.status(401).json({ error: "token invalid" });
-        }
-
-        // verificar usuario
-        const user = await User.findById(decodedToken.id);
-        if (!user) {
-            return response.status(404).json({ error: "user not found" });
-        }
+        const user = request.user;
 
         // verificar si el blog existe
         const blog = await Blog.findById(request.params.id);
@@ -74,11 +57,9 @@ blogsRouter.delete("/:id", async (request, response) => {
             await Blog.findByIdAndDelete(request.params.id);
             return response.status(204).end();
         } else {
-            return response
-                .status(401)
-                .json({
-                    error: "unauthorized: only the creator can delete this blog",
-                });
+            return response.status(401).json({
+                error: "unauthorized: only the creator can delete this blog",
+            });
         }
     } catch (error) {
         if (error.name === "JsonWebTokenError") {
