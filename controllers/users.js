@@ -13,20 +13,41 @@ usersRouter.get("/", async (request, response) => {
 });
 
 usersRouter.post("/", async (request, response) => {
-    const { username, name, password } = request.body;
+    try {
+        const { username, name, password } = request.body;
 
-    const saltRounds = 10;
-    const passwordHash = await bcrypt.hash(password, saltRounds);
+        console.log("request.body-controlador: ", request.body);
+        const existingUser = await User.findOne({ username });
+        console.log("Mensaje del controlador: ", existingUser);
 
-    const user = new User({
-        username,
-        name,
-        passwordHash,
-    });
+        if (existingUser) {
+            return response
+                .status(400)
+                .json({ error: "expected `username` to be unique" });
+        }
 
-    const savedUser = await user.save();
+        const saltRounds = 10;
+        const passwordHash = await bcrypt.hash(password, saltRounds);
 
-    response.status(201).json(savedUser);
+        const user = new User({
+            username,
+            name,
+            passwordHash,
+        });
+
+        const savedUser = await user.save();
+        // console.log("Usuario guardado: ", savedUser);
+        response.status(201).json(savedUser);
+    } catch (error) {
+        if (error.code === 11000) {
+            return response.status(400).json({
+                error: "expected `username` to be unique",
+            });
+        }
+        response.status(400).json({
+            error: error.message,
+        });
+    }
 });
 
 module.exports = usersRouter;

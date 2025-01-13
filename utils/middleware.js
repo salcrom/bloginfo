@@ -1,6 +1,6 @@
 const logger = require("./logger");
 const jwt = require("jsonwebtoken");
-const User = require("./models/user");
+const User = require("../models/user");
 
 const requestLogger = (request, response, next) => {
     logger.info("Method:", request.method);
@@ -15,7 +15,8 @@ const unknownEndpoint = (request, response) => {
 };
 
 const errorHandler = (error, request, response, next) => {
-    logger.error(error.message);
+    logger.error("Error name: ", error.name);
+    logger.error("Error message: ", error.message);
 
     if (error.name === "CastError") {
         return response.status(400).send({ error: "malformatted id" });
@@ -35,33 +36,38 @@ const errorHandler = (error, request, response, next) => {
     next(error);
 };
 
-const getTokenFrom = (request) => {
-    const authorization = request.get("authorization");
-    if (authorization && authorization.startsWith("Bearer ")) {
-        return authorization.replace("Bearer ", "");
-    }
-    return null;
-};
 const tokenExtractor = (request, response, next) => {
-    request.token = getTokenFrom(request);
+    const authorization = request.get("authorization");
+    if (authorization && authorization.toLowerCase().startsWith("bearer ")) {
+        request.token = authorization.substring(7);
+    }
 
     next();
 };
 
-const userExtractor = (request, response, next) => {
+const userExtractor = async (request, response, next) => {
     try {
         const token = request.token;
+
         if (!token) {
-            return response.status(401).json({ error: "token missing" });
+            console.log("No token provided");
+            return response.status(401).json({
+                error: "token missing",
+            });
         }
 
         const decodedToken = jwt.verify(token, process.env.SECRET);
+        // console.log("Token decodificado: ", decodedToken);
+
         if (!decodedToken.id) {
+            console.log("Token no contiene ID");
             return response.status(401).json({ error: "token invalid" });
         }
 
-        const user = User.findById(decodedToken.id);
+        const user = await User.findById(decodedToken.id);
+        // console.log("Usuario encontrado: ", user);
         if (!user) {
+            console.log("Usuario no encontrado");
             return response.status(404).json({ error: "user not found" });
         }
 
@@ -71,6 +77,8 @@ const userExtractor = (request, response, next) => {
     } catch (error) {
         if (error.name === "JsonWebTokenError") {
             return response.status(401).json({ error: "token invalid" });
+        } else {
+            console.error("Error en userExtractor", error);
         }
         next(error);
     }

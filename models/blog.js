@@ -3,17 +3,15 @@ const mongoose = require("mongoose");
 const blogSchema = new mongoose.Schema({
     title: {
         type: String,
-        required: true,
-        minlength: 5,
+        required: [true, "Title is required"],
     },
     author: {
         type: String,
-        required: true,
-        minlength: 3,
+        default: "",
     },
     url: {
         type: String,
-        required: true,
+        required: [true, "URL is required"],
     },
     likes: {
         type: Number,
@@ -22,6 +20,7 @@ const blogSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
+        required: [true, "User is required"],
     },
 });
 
@@ -30,6 +29,14 @@ blogSchema.set("toJSON", {
         returnedObject.id = returnedObject._id.toString();
         delete returnedObject._id;
         delete returnedObject.__v;
+
+        // if (returnedObject.user && returnedObject.user._id) {
+        //     returnedObject.user = {
+        //         username: returnedObject.user.user.username,
+        //         name: returnedObject.user.name,
+        //         id: returnedObject.user._id.toString(),
+        //     };
+        // }
     },
 });
 
